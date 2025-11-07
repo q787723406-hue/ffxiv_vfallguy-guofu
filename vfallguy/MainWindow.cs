@@ -21,6 +21,7 @@ public class MainWindow : Window, IDisposable
     private float _movementSpeed;
     private bool _autoJoin;
     private bool _autoLeaveIfNotSolo;
+    private bool _autoLeaveAfterRound1; // Add this field
     private bool _showAOEs;
     private bool _showAOEText;
     private bool _showPathfind;
@@ -30,11 +31,13 @@ public class MainWindow : Window, IDisposable
     private float _autoJoinDelay = 0.5f;
     private float _autoLeaveDelay = 3;
     private int _autoLeaveLimit = 1;
+    private bool _round1Finished = false; // Add this flag
 
     public MainWindow() : base("vfailguy")
     {
         ShowCloseButton = false;
         RespectCloseHotkey = false;
+        Service.ChatGui.ChatMessage += OnChatMessage;
     }
 
     public void Dispose()
@@ -42,6 +45,7 @@ public class MainWindow : Window, IDisposable
         _map?.Dispose();
         _gameEvents.Dispose();
         _automation.Dispose();
+        Service.ChatGui.ChatMessage -= OnChatMessage;
     }
 
     public unsafe override void PreOpenCheck()
@@ -61,6 +65,7 @@ public class MainWindow : Window, IDisposable
         UpdateMap();
         UpdateAutoJoin();
         UpdateAutoLeave();
+        UpdateAutoLeaveAfterRound1(); // Add this call
         DrawOverlays();
 
         _drawer.DrawWorldPrimitives();
@@ -93,6 +98,7 @@ public class MainWindow : Window, IDisposable
                 ImGui.SliderInt("Limit", ref _autoLeaveLimit, 1, 23);
             }
         }
+        ImGui.Checkbox("Auto leave after round 1", ref _autoLeaveAfterRound1); // Add this checkbox
         ImGui.Checkbox("Show AOE zones", ref _showAOEs);
         ImGui.Checkbox("Show AOE debug text", ref _showAOEText);
         ImGui.Checkbox("Show proposed path", ref _showPathfind);
@@ -190,6 +196,25 @@ public class MainWindow : Window, IDisposable
             Service.Log.Debug($"Auto-leaving: {_numPlayersInDuty} players");
             _automation.LeaveDuty();
             _autoLeaveAt = DateTime.MaxValue;
+        }
+    }
+
+    private void OnChatMessage(Dalamud.Game.Text.XivChatType type, uint senderId, ref Dalamud.Game.Text.SeStringHandling.SeString sender, ref Dalamud.Game.Text.SeStringHandling.SeString message, ref bool isHandled)
+    {
+        if (message.ToString().Contains("金碟声誉"))
+        {
+            _round1Finished = true;
+        }
+    }
+
+    private void UpdateAutoLeaveAfterRound1()
+    {
+        bool wantAutoLeave = _autoLeaveAfterRound1 && _round1Finished && _automation.Idle;
+        if (wantAutoLeave)
+        {
+            Service.Log.Debug("Auto-leaving after round 1");
+            _automation.LeaveDuty();
+            _round1Finished = false; // Reset the flag
         }
     }
 
