@@ -1,0 +1,27 @@
+{
+  "Plugins": [
+    {
+      "BasicInfo": {
+        "Id": "hmg",  
+        "Name": "VFallGuy",          
+        "Author": "红蘑菇",                  
+        "Version": "1.0.0",                   
+        "Description": "基于原插件修改的FF14国服适配版VFallGuy插件",
+        "RepoUrl": "https://github.com/q787723406-hue/ffxiv_vfallguy-guofu", 
+        "Tags": ["FF14"] 
+      },
+      "Version": "1.0.0",  
+      "DownloadUrls": [
+        "https://raw.githubusercontent.com/q787723406-hue/ffxiv_vfallguy-guofu/master/vfallguy/VFallGuy.dll"
+      ],
+      "Dependencies": [
+        {
+          "Id": "dev.dalamud.dalamudcore",
+          "Version": "1.0.0.0" 
+        }
+      ],
+      "IsHide": false,
+      "IsTesting": false
+    }
+  ]
+}
